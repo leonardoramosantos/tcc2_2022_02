@@ -5,13 +5,11 @@ class IssueController():
     Wrapper to operate on the Database using Models
 
     """
-    
+
     def __init__(self):
-        self.cfg_collection = db_prediction_mechanism["issue"]
+        self.similarities_collec = db_prediction_mechanism["issue"]
 
     async def save_issue(self, issue_id, issue_to_save):
-        result = None
-        
         issue_to_save = {k: v for k, v in issue_to_save.dict().items() \
             if v is not None}
 
@@ -23,8 +21,19 @@ class IssueController():
             "$set": issue_to_save
         }
 
-        result = await self.cfg_collection.update_one(issue_filter,
-                                                      issue_update,
-                                                      True)
+        await self.similarities_collec.update_one(issue_filter,
+                                             issue_update,
+                                             True)
 
-        return result.raw_result
+        return await self.similarities_collec.find_one(issue_filter)
+
+    async def get_all_issues(self):
+        return await self.similarities_collec.find().to_list(100000)
+
+    async def get_issue_by_issue_id(self, issue_id):
+        issue_filter = {
+            "issue_id": issue_id
+        }
+        result = await self.similarities_collec.find_one(issue_filter)
+
+        return result

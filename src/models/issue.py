@@ -15,6 +15,7 @@ class IssueModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     issue_id: int = Field()
     project_id: int = Field()
+    issue_type: str = Field()
     subject: str = Field()
     description: str = Field()
     created_on: date_type = Field()
@@ -30,7 +31,8 @@ class UpdateIssueModel(BaseModel):
     """
 
     issue_id: Optional[int]
-    project_id: int = Optional[int]
+    project_id: Optional[int]
+    issue_type: Optional[str]
     subject: Optional[str]
     description: Optional[str]
     created_on: Optional[date_type]
