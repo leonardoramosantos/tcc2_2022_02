@@ -30,6 +30,13 @@ class IssueController():
     async def get_all_issues(self):
         return await self.similarities_collec.find().to_list(100000)
 
+    async def get_all_issues_from_project(self, project_id):
+        issue_filter = {
+            "project_id": project_id
+        }
+
+        return await self.similarities_collec.find().to_list(100000)
+
     async def get_issue_by_issue_id(self, issue_id):
         issue_filter = {
             "issue_id": issue_id

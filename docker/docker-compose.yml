@@ -52,10 +52,14 @@ services:
       context: ../.
       dockerfile: ./docker/Dockerfile
     volumes:
+      - ./volumes/git_vol:/var/git
       - ../src/:/app/src
     environment:
       - MONGODB_URL=mongodb://root:admin123@mongodb:27017
       - REDMINE_URL=http://redmine:3000
+      - PROCESS_ALL_PROJECTS=S
+      - SVN_USER=admin
+      - SVN_PASSWORD=admin
     ports:
       - 8000:8000
     expose:
@@ -63,3 +67,24 @@ services:
     depends_on:
       - redmine
       - mongodb
+
+  edge:
+    image: svnedge/app:latest
+    ports:
+      - "18080:18080"
+      - "3343:3343"
+    environment:
+      SET_PERMS: "false"
+    volumes:
+      - ./volumes/svn:/home/svnedge/csvn/data
+
+  svn-compatible:
+    build:
+      context: ../.
+      dockerfile: ./docker/Dockerfile.svn
+    ports:
+      - 18000:80
+    expose:
+      - 80
+    volumes:
+      - ./volumes/svn_compatible:/var/www/svn

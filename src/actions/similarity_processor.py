@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
@@ -23,7 +24,12 @@ class SimilarityProcessor():
         result = {}
         result["issue_processed"] = issue_to_process
 
-        issue_list = await self.issue_controller.get_all_issues()
+        issue_list = None 
+        if os.environ.get("PROCESS_ALL_PROJECTS") == "S":
+            issue_list = await self.issue_controller.get_all_issues()
+        else:
+            issue_list = await self.issue_controller.get_all_issues_from_project(
+                issue_to_process.project_id)
 
         count_processed = 0
         for issue in issue_list:

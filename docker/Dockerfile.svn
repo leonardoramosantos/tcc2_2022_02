@@ -1,0 +1,12 @@
+FROM deminy/php-svn:php-7.1-svn-1.9.9
+
+RUN apt-get update
+RUN apt-get install -y apache2 libapache2-mod-svn libapache2-mod-svn
+
+WORKDIR /var/www/svn
+COPY ./docker/src/dav_svn.conf /etc/apache2/mods-enabled/dav_svn.conf
+RUN htpasswd -cbm /etc/svnusers admin admin
+
+# RUN source /etc/apache2/envvars
+
+CMD apachectl -D FOREGROUND

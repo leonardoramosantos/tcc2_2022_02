@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from typing import List
 
 from .new_issues_importer import NewIssuesImporter
+from .repo_processor import RepoProcessor
 from .similarity_processor import SimilarityProcessor
 from .updated_issues_importer import UpdatedIssuesImporter
 from ..controllers.issues_similarity import IssuesSimilarityController
@@ -37,3 +38,10 @@ async def reprocess_issue(id: int):
     similarity_controller = IssuesSimilarityController()
     return await similarity_controller.get_most_similars_issues(
             processed_data.get("issue_processed"))
+
+@router.post("/update_and_process_project_repo/{project_id}",
+             response_description="Update project repo and gather info",
+             tags=["actions", "repo"])
+async def update_and_process_project_repo(id: int):
+    processor = RepoProcessor()
+    await processor.update_repo(id)

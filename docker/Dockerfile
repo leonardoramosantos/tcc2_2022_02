@@ -1,5 +1,7 @@
 FROM python:3
 
+ENV LC_ALL=C
+
 WORKDIR /app
 
 # copy run files before for docker layer caching
