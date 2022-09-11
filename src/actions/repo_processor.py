@@ -1,3 +1,4 @@
+from ..controllers.issue_commit import IssueCommitController
 from ..controllers.project import ProjectController
 from ..models.project import ProjectModel
 from ..models.project import REPO_TYPE_GIT_CODE
@@ -33,15 +34,20 @@ class RepoProcessor:
         if self.project_obj is None:
             await self.load_project(project_id)
 
-        last_commit = await self.repo_wrapper.udpate_repo()
+        last_commit, issue_commits = await self.repo_wrapper.udpate_repo()
         if last_commit is not None:
             self.project_obj.repo_last_commit = last_commit
 
             controller = ProjectController()
             await controller.save_existing_project(self.project_obj)
 
+        commit_controller = IssueCommitController()
+        for issue_commit in issue_commits:
+            await commit_controller.save_issue_commit(issue_commit)
+
         result = {
-            "last_commit": last_commit
+            "last_commit": last_commit,
+            "issue_commits": issue_commits
         }
         return result
         #svn co http://effe371eb6e3:18080/svn/project_2 project_2 --username=admin

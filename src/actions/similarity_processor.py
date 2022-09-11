@@ -16,7 +16,6 @@ class SimilarityProcessor():
 
     async def process_issue_similarities_by_id(self, issue_id):
         issue = await self.issue_controller.get_issue_by_issue_id(issue_id)
-        issue = IssueModel.parse_obj(issue)
 
         return await self.process_issue_similarities(issue)
 

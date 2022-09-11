@@ -1,12 +1,19 @@
 from bson import ObjectId
+from enum import Enum
 from datetime import datetime as date_type
 from pydantic import BaseModel
 from pydantic import Field
 from typing import Optional
 
+from .default_model import DefaultModel
 from ..utils.py_object_id import PyObjectId
 
-class IssueModel(BaseModel):
+class IssueStatusEnum(str, Enum):
+    ALL = "ALL"
+    ONLY_OPEN = "ONLY_OPEN"
+    ONLY_CLOSED = "ONLY_CLOSED"
+
+class IssueModel(DefaultModel):
     """
     DTO for Issues on Database
 
@@ -22,11 +29,7 @@ class IssueModel(BaseModel):
     closed_on: Optional[date_type]
     updated_on: date_type = Field()
 
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
-class UpdateIssueModel(BaseModel):
+class UpdateIssueModel(DefaultModel):
     """
     """
 
@@ -38,7 +41,3 @@ class UpdateIssueModel(BaseModel):
     created_on: Optional[date_type]
     closed_on: Optional[date_type]
     updated_on: Optional[date_type]
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}

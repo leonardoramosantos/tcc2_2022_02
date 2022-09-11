@@ -1,3 +1,4 @@
+from ..models.issue import IssueModel
 from ..utils.db_connection import db_prediction_mechanism
 
 class IssueController():
@@ -41,6 +42,14 @@ class IssueController():
         issue_filter = {
             "issue_id": issue_id
         }
-        result = await self.similarities_collec.find_one(issue_filter)
-
-        return result
+        issue = await self.similarities_collec.find_one(issue_filter)
+        issue_obj = IssueModel.parse_obj(issue)
+        return issue_obj
+    
+    async def get_issue_by_issue_mongo_id(self, mongo_id):
+        issue_filter = {
+            "_id": mongo_id
+        }
+        issue = await self.similarities_collec.find_one(issue_filter)
+        issue_obj = IssueModel.parse_obj(issue)
+        return issue_obj

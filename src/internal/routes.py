@@ -5,7 +5,11 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from typing import List
 
+from ..controllers.issue import IssueController
+from ..controllers.issue_commit import IssueCommitController
+from ..controllers.issues_similarity import IssuesSimilarityController
 from ..models.issue import IssueModel
+from ..models.issue_commit import IssueCommitModel
 from ..models.issues_similarity import IssuesSimilarityModel
 from ..models.project import ProjectModel
 from ..models.project import UpdateProjectModel
@@ -37,3 +41,17 @@ async def insert_project(project: UpdateProjectModel = Body(...)):
     new_project = await db_prediction_mechanism["project"].insert_one(project_obj)
     created_project = await db_prediction_mechanism["project"].find_one({"_id": new_project.inserted_id})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=ProjectModel(created_project))
+
+@router.get("/issue_commits/", response_description="Lista Issue Commits",
+            tags=["internal"], response_model=List[IssueCommitModel])
+async def get_issue_commits(issue_id: int):
+    controller = IssueCommitController()
+    return await controller.get_all_issue_commits(issue_id)
+
+@router.post("/issue_similarities_and_artifacts/", response_description="Get Similar Issues and Artifacts",
+             tags=["internal", "integration"])
+async def get_issue_similarities_and_artifacts(issue_id: int):
+    issue_controller = IssueController()
+    issue = await issue_controller.get_issue_by_issue_id(issue_id)
+    controller = IssuesSimilarityController()
+    return await controller.get_issue_similarities_and_artifacts(issue)

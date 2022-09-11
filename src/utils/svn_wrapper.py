@@ -5,6 +5,8 @@ import svn.local
 import svn.remote
 import pysvn
 
+from ..models.issue_commit import IssueCommitFileModel
+from ..models.issue_commit import IssueCommitModel
 from .repo_wrapper import RepoWrapper
 
 class LogEntry:
@@ -72,7 +74,9 @@ class SVNWrapper(RepoWrapper):
 
                 log_entry_obj = LogEntry(log_entry[0], log_entry[1])
                 log_entry_obj.process_diff(log_entry[2])
-                result.append(log_entry_obj)
+                print(log_entry_obj.release, self.repo_last_commit)
+                if log_entry_obj.release > self.repo_last_commit:
+                    result.append(log_entry_obj)
 
         return result
 
@@ -84,46 +88,28 @@ class SVNWrapper(RepoWrapper):
         last_commit = None
         logs = self.process_log_result(await log("http://svn-compatible/svn/project_2", os.environ.get("SVN_USER"), os.environ.get("SVN_PASSWORD")))
         logs.reverse()
-        for i in logs:
-            print("NOVA ENTRADA LOG")
-            print(f"HEADER {i.log_header}")
-            print(f"RELEASE {i.release}")
-            print(f"FEATURE {i.feature_number}")
-            print(f"USER {i.user}")
-            print(f"MSG {i.log_msg}")
-            for j in i.diffs:
-                print(f"ARQUIVO MODIFICADO {j.changed_file}")
-                for l in j.changed_lines:
-                    print(f"LINHA MODIFICADA {l}")
-            print(("FINAL"))
-            print()
-            print()
+        commit_list = []
+        if logs:
+            for i in logs:
+                files = []
+                for j in i.diffs:
+                    diff_file = IssueCommitFileModel(
+                        file_name=j.changed_file, 
+                        changes=j.changed_lines)
+                    files.append(diff_file)
 
-            last_commit = i.release
+                issue_commit = IssueCommitModel(issue_id=i.feature_number,
+                                                commit_id=i.release,
+                                                message=i.log_msg,
+                                                username=i.user,
+                                                changes=files)
+                commit_list.append(issue_commit)
 
-        return last_commit
-        # self.repo = svn.local.LocalClient("/var/git/" + self.repo_path,
-        #                                   username=os.environ.get("SVN_USER"),
-        #                                   password=os.environ.get("SVN_PASSWORD"))
+                last_commit = i.release
+        else:
+            print("Nenhum commit novo")
 
-        # # self.repo = svn.remote.RemoteClient("http://svn-compatible/svn/project_2",
-        # #                                   username=os.environ.get("SVN_USER"),
-        # #                                   password=os.environ.get("SVN_PASSWORD"))
-
-        # print("Antes de buscar", dir(self.repo))
-        # print(self.repo.log_default(rel_filepath="log.xml", revision_from='1'))
-        # # pprint.pprint(self.repo.log_default())
-        # for t in self.repo.log_default(rel_filepath="log.xml", revision_from='1'):
-        #     print(t)
-
-        # for i in self.repo.diff_summary(old=1, new=2):
-        #     print(i)
-        # # self.repo.update()
-
-        # # client = pysvn.Client("/var/git/" + self.repo_path)
-        # # print(client.log())
-        # # for e in self.repo.log_default():
-        # #     print(e)
+        return [last_commit, commit_list]
 
 #!/usr/bin/env python
 import os
@@ -143,7 +129,6 @@ async def call_cmd(cmd):
 async def log(repo, username, password):
     cmd = ' '.join(["svn", "log", repo, "--username", username, "--password", password, "--diff"])
     result = await call_cmd(cmd)
-    print("SVN", result)
     return result.split('-' * 72)
 
 

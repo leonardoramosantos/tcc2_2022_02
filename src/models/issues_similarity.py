@@ -5,6 +5,7 @@ from pydantic import Field
 from typing import Optional
 from typing import List
 
+from .default_model import DefaultModel
 from ..utils.py_object_id import PyObjectId
 
 class IssuesSimilarityModel(BaseModel):
@@ -38,3 +39,20 @@ class UpdateIssuesSimilarityModel(BaseModel):
         json_encoders = {
             ObjectId: str
         }
+
+class IssueModel(DefaultModel):
+    """
+    DTO for Issues on Database
+
+    """
+
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    issue_id: int = Field()
+    project_id: int = Field()
+    issue_type: str = Field()
+    subject: str = Field()
+    description: str = Field()
+    created_on: date_type = Field()
+    closed_on: Optional[date_type]
+    updated_on: date_type = Field()
+    similarity_relevance: Optional[float]
